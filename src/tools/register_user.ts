@@ -23,7 +23,7 @@ const ColorSchema = z.object({
 });
 
 const HeaderSchema = z.object({
-  logo: z.string().url(),
+  logo: z.string(),
   name: z.string(),
   color: ColorSchema,
 });
@@ -92,33 +92,60 @@ function extractMcpValue(value: any): any {
   return value;
 }
 
+// Default values based on your provided template
+const DEFAULT_VALUES = {
+  admin_id: 67,
+  organization_id: 76,
+  superadmin_id: 1,
+  associate_id: 1,
+  exam_id: 2,
+  set_id: 16,
+  logo: "https://tm-uat-resources.s3.ap-south-1.amazonaws.com/brand-logo/blank-logo-main.png",
+  name: "",
+  primary_color: "",
+  background_color: "",
+  cta_color: "",
+  cta_text_color: "",
+  cta_text: "",
+  copyright_text: "",
+  test_name: "",
+  backtodashboard: "",
+  testlink: "",
+  reportlink: "",
+  client_id: "",
+  client_log: "",
+};
+
 export function registerUserRegisterTool(server: McpServer) {
   server.tool(
     "register_user",
     {
-      admin_id: z.number().describe("Admin ID"),
-      organization_id: z.number().describe("Organization ID"),
-      superadmin_id: z.number().describe("Superadmin ID"),
-      associate_id: z.number().describe("Associate ID"),
-      exam_id: z.number().describe("Exam ID"),
-      set_id: z.number().describe("Set ID"),
-      logo: z.string().describe("Logo URL"),
-      name: z.string().describe("Organization name"),
-      primary_color: z.string().describe("Primary color (hex)"),
-      background_color: z.string().describe("Background color (hex)"),
-      cta_color: z.string().describe("CTA button color (hex)"),
-      cta_text_color: z.string().describe("CTA text color (hex)"),
-      cta_text: z.string().describe("CTA button text"),
-      copyright_text: z.string().describe("Copyright text"),
-      test_name: z.string().describe("Test name"),
-      backtodashboard: z.string().describe("Back to dashboard URL"),
-      testlink: z.string().describe("Test link URL"),
-      reportlink: z.string().describe("Report link URL"),
-      username: z.string().describe("Username"),
+      // Only required fields
+      username: z.string().describe("Username/Full Name"),
       emailid: z.string().email().describe("Email address"),
       contact_no: z.string().describe("Contact number"),
-      client_id: z.string().describe("Client ID"),
-      client_log: z.string().describe("Client log"),
+      
+      // Optional fields with defaults
+      admin_id: z.number().optional().describe("Admin ID (default: 67)"),
+      organization_id: z.number().optional().describe("Organization ID (default: 76)"),
+      superadmin_id: z.number().optional().describe("Superadmin ID (default: 1)"),
+      associate_id: z.number().optional().describe("Associate ID (default: 1)"),
+      exam_id: z.number().optional().describe("Exam ID (default: 2)"),
+      set_id: z.number().optional().describe("Set ID (default: 16)"),
+      logo: z.string().optional().describe("Logo URL"),
+      name: z.string().optional().describe("Organization name"),
+      primary_color: z.string().optional().describe("Primary color (hex)"),
+      background_color: z.string().optional().describe("Background color (hex)"),
+      cta_color: z.string().optional().describe("CTA button color (hex)"),
+      cta_text_color: z.string().optional().describe("CTA text color (hex)"),
+      cta_text: z.string().optional().describe("CTA button text"),
+      copyright_text: z.string().optional().describe("Copyright text"),
+      test_name: z.string().optional().describe("Test name"),
+      backtodashboard: z.string().optional().describe("Back to dashboard URL"),
+      testlink: z.string().optional().describe("Test link URL"),
+      reportlink: z.string().optional().describe("Report link URL"),
+      client_id: z.string().optional().describe("Client ID"),
+      client_log: z.string().optional().describe("Client log"),
     },
     async (rawParams) => {
       try {
@@ -132,75 +159,84 @@ export function registerUserRegisterTool(server: McpServer) {
 
         console.log("Extracted parameters:", params);
 
-        // Validate extracted parameters
-        const validationSchema = z.object({
-          admin_id: z.number(),
-          organization_id: z.number(),
-          superadmin_id: z.number(),
-          associate_id: z.number(),
-          exam_id: z.number(),
-          set_id: z.number(),
-          logo: z.string(),
-          name: z.string(),
-          primary_color: z.string(),
-          background_color: z.string(),
-          cta_color: z.string(),
-          cta_text_color: z.string(),
-          cta_text: z.string(),
-          copyright_text: z.string(),
-          test_name: z.string(),
-          backtodashboard: z.string(),
-          testlink: z.string(),
-          reportlink: z.string(),
-          username: z.string(),
-          emailid: z.string().email(),
-          contact_no: z.string(),
-          client_id: z.string(),
-          client_log: z.string(),
+        // Validate required parameters only
+        const requiredSchema = z.object({
+          username: z.string().min(1, "Username is required"),
+          emailid: z.string().email("Valid email is required"),
+          contact_no: z.string().min(1, "Contact number is required"),
         });
 
-        const validatedParams = validationSchema.parse(params);
+        const requiredParams = requiredSchema.parse({
+          username: params.username,
+          emailid: params.emailid,
+          contact_no: params.contact_no,
+        });
+
+        // Merge with defaults
+        const finalParams = {
+          admin_id: params.admin_id ?? DEFAULT_VALUES.admin_id,
+          organization_id: params.organization_id ?? DEFAULT_VALUES.organization_id,
+          superadmin_id: params.superadmin_id ?? DEFAULT_VALUES.superadmin_id,
+          associate_id: params.associate_id ?? DEFAULT_VALUES.associate_id,
+          exam_id: params.exam_id ?? DEFAULT_VALUES.exam_id,
+          set_id: params.set_id ?? DEFAULT_VALUES.set_id,
+          logo: params.logo ?? DEFAULT_VALUES.logo,
+          name: params.name ?? DEFAULT_VALUES.name,
+          primary_color: params.primary_color ?? DEFAULT_VALUES.primary_color,
+          background_color: params.background_color ?? DEFAULT_VALUES.background_color,
+          cta_color: params.cta_color ?? DEFAULT_VALUES.cta_color,
+          cta_text_color: params.cta_text_color ?? DEFAULT_VALUES.cta_text_color,
+          cta_text: params.cta_text ?? DEFAULT_VALUES.cta_text,
+          copyright_text: params.copyright_text ?? DEFAULT_VALUES.copyright_text,
+          test_name: params.test_name ?? DEFAULT_VALUES.test_name,
+          backtodashboard: params.backtodashboard ?? DEFAULT_VALUES.backtodashboard,
+          testlink: params.testlink ?? DEFAULT_VALUES.testlink,
+          reportlink: params.reportlink ?? DEFAULT_VALUES.reportlink,
+          client_id: params.client_id ?? DEFAULT_VALUES.client_id,
+          client_log: params.client_log ?? DEFAULT_VALUES.client_log,
+          ...requiredParams, // Override with validated required params
+        };
 
         const requestData: UserRegisterRequest = {
           admin: {
-            admin_id: validatedParams.admin_id,
-            organization_id: validatedParams.organization_id,
-            superadmin_id: validatedParams.superadmin_id,
-            associate_id: validatedParams.associate_id,
+            admin_id: finalParams.admin_id,
+            organization_id: finalParams.organization_id,
+            superadmin_id: finalParams.superadmin_id,
+            associate_id: finalParams.associate_id,
           },
           exam: {
-            exam_id: validatedParams.exam_id,
-            set_id: validatedParams.set_id,
+            exam_id: finalParams.exam_id,
+            set_id: finalParams.set_id,
           },
           oem: {
             header: {
-              logo: validatedParams.logo,
-              name: validatedParams.name,
+              logo: finalParams.logo,
+              name: finalParams.name,
               color: {
-                primary: validatedParams.primary_color,
-                background: validatedParams.background_color,
-                cta: validatedParams.cta_color,
-                cta_text_color: validatedParams.cta_text_color,
-                cta_text: validatedParams.cta_text,
+                primary: finalParams.primary_color,
+                background: finalParams.background_color,
+                cta: finalParams.cta_color,
+                cta_text_color: finalParams.cta_text_color,
+                cta_text: finalParams.cta_text,
               },
             },
             footer: {
-              copyright_text: validatedParams.copyright_text,
-              test_name: validatedParams.test_name,
+              copyright_text: finalParams.copyright_text,
+              test_name: finalParams.test_name,
             },
             links: {
-              backtodashboard: validatedParams.backtodashboard,
-              testlink: validatedParams.testlink,
-              reportlink: validatedParams.reportlink,
+              backtodashboard: finalParams.backtodashboard,
+              testlink: finalParams.testlink,
+              reportlink: finalParams.reportlink,
             },
           },
           user: {
-            username: validatedParams.username,
-            emailid: validatedParams.emailid,
-            contact_no: validatedParams.contact_no,
+            username: finalParams.username,
+            emailid: finalParams.emailid,
+            contact_no: finalParams.contact_no,
           },
-          client_id: validatedParams.client_id,
-          client_log: validatedParams.client_log,
+          client_id: finalParams.client_id,
+          client_log: finalParams.client_log,
         };
 
         console.log("Transformed request data:", JSON.stringify(requestData, null, 2));
