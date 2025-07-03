@@ -11,7 +11,15 @@ export class MyMCP extends McpAgent<Env, unknown, Props> {
 		version: "1.0.0",
 	});
 
-	async init() {}
+	async init() {
+		this.server.tool(
+			"add",
+			{ a: z.number(), b: z.number() },
+			async ({ a, b }) => ({
+				content: [{ type: "text", text: String(a + b) }],
+			})
+		);
+	}
 }
 
 export default new OAuthProvider({
