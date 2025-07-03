@@ -36,5 +36,9 @@
   },
   "dev": {
     "port": 8788
+  },
+  "vars": {
+    "REGISTER_API_URL": "https://9exf96z4n3.execute-api.ap-south-1.amazonaws.com/prod/user/register",
+    "REGISTER_API_TOKEN": "e4a8f994646cd630e14d27bed8762957"
   }
 }
