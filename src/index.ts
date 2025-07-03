@@ -4,7 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { AuthkitHandler } from "./authkit-handler";
 import type { Props } from "./props";
-
+import { registerUserRegisterTool } from "./tools/register_user";
 
 
 export class MyMCP extends McpAgent<Env, unknown, Props> {
@@ -14,13 +14,8 @@ export class MyMCP extends McpAgent<Env, unknown, Props> {
 	});
 
 	async init() {
-		this.server.tool(
-			"add",
-			{ a: z.number(), b: z.number() },
-			async ({ a, b }) => ({
-				content: [{ type: "text", text: String(a + b) }],
-			})
-		);}
+		registerUserRegisterTool(this.server);
+	}
 }
 
 export default new OAuthProvider({
