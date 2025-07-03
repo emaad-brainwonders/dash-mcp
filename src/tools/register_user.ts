@@ -114,11 +114,13 @@ export function registerUserRegisterTool(server: McpServer) {
     },
     async (rawParams) => {
       try {
-        // Extract actual values from MCP parameter objects
+        // Extract actual values from MCP parameter objects with proper typing
         const params = Object.fromEntries(
           Object.entries(rawParams).map(([key, value]) => [
             key,
-            typeof value === 'object' && value !== null && 'value' in value ? value.value : value
+            typeof value === 'object' && value !== null && 'value' in value 
+              ? (value as { value: any }).value 
+              : value
           ])
         );
 
