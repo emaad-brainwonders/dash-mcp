@@ -84,6 +84,14 @@ async function registerUser(data: UserRegisterRequest): Promise<any> {
   return await response.json();
 }
 
+// Helper function to extract values from MCP parameter objects
+function extractMcpValue(value: any): any {
+  if (value && typeof value === 'object' && 'value' in value) {
+    return value.value;
+  }
+  return value;
+}
+
 export function registerUserRegisterTool(server: McpServer) {
   server.tool(
     "register_user",
@@ -94,7 +102,7 @@ export function registerUserRegisterTool(server: McpServer) {
       associate_id: z.number().describe("Associate ID"),
       exam_id: z.number().describe("Exam ID"),
       set_id: z.number().describe("Set ID"),
-      logo: z.string().url().describe("Logo URL"),
+      logo: z.string().describe("Logo URL"),
       name: z.string().describe("Organization name"),
       primary_color: z.string().describe("Primary color (hex)"),
       background_color: z.string().describe("Background color (hex)"),
@@ -114,15 +122,15 @@ export function registerUserRegisterTool(server: McpServer) {
     },
     async (rawParams) => {
       try {
-        // Extract actual values from MCP parameter objects with proper typing
+        // Extract actual values from MCP parameter objects
         const params = Object.fromEntries(
           Object.entries(rawParams).map(([key, value]) => [
             key,
-            typeof value === 'object' && value !== null && 'value' in value 
-              ? (value as { value: any }).value 
-              : value
+            extractMcpValue(value)
           ])
         );
+
+        console.log("Extracted parameters:", params);
 
         // Validate extracted parameters
         const validationSchema = z.object({
@@ -132,7 +140,7 @@ export function registerUserRegisterTool(server: McpServer) {
           associate_id: z.number(),
           exam_id: z.number(),
           set_id: z.number(),
-          logo: z.string().url(),
+          logo: z.string(),
           name: z.string(),
           primary_color: z.string(),
           background_color: z.string(),
@@ -195,6 +203,8 @@ export function registerUserRegisterTool(server: McpServer) {
           client_log: validatedParams.client_log,
         };
 
+        console.log("Transformed request data:", JSON.stringify(requestData, null, 2));
+
         const result = await registerUser(requestData);
         
         return {
@@ -204,6 +214,8 @@ export function registerUserRegisterTool(server: McpServer) {
           }],
         };
       } catch (error) {
+        console.error("Error in register_user tool:", error);
+        
         if (error instanceof z.ZodError) {
           return {
             content: [{ 
