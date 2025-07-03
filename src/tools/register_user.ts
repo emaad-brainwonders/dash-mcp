@@ -88,72 +88,109 @@ export function registerUserRegisterTool(server: McpServer) {
   server.tool(
     "register_user",
     {
-      admin_id: z.number(),
-      organization_id: z.number(),
-      superadmin_id: z.number(),
-      associate_id: z.number(),
-      exam_id: z.number(),
-      set_id: z.number(),
-      logo: z.string().url(),
-      name: z.string(),
-      primary_color: z.string(),
-      background_color: z.string(),
-      cta_color: z.string(),
-      cta_text_color: z.string(),
-      cta_text: z.string(),
-      copyright_text: z.string(),
-      test_name: z.string(),
-      backtodashboard: z.string(),
-      testlink: z.string(),
-      reportlink: z.string(),
-      username: z.string(),
-      emailid: z.string().email(),
-      contact_no: z.string(),
-      client_id: z.string(),
-      client_log: z.string(),
+      admin_id: z.number().describe("Admin ID"),
+      organization_id: z.number().describe("Organization ID"),
+      superadmin_id: z.number().describe("Superadmin ID"),
+      associate_id: z.number().describe("Associate ID"),
+      exam_id: z.number().describe("Exam ID"),
+      set_id: z.number().describe("Set ID"),
+      logo: z.string().url().describe("Logo URL"),
+      name: z.string().describe("Organization name"),
+      primary_color: z.string().describe("Primary color (hex)"),
+      background_color: z.string().describe("Background color (hex)"),
+      cta_color: z.string().describe("CTA button color (hex)"),
+      cta_text_color: z.string().describe("CTA text color (hex)"),
+      cta_text: z.string().describe("CTA button text"),
+      copyright_text: z.string().describe("Copyright text"),
+      test_name: z.string().describe("Test name"),
+      backtodashboard: z.string().describe("Back to dashboard URL"),
+      testlink: z.string().describe("Test link URL"),
+      reportlink: z.string().describe("Report link URL"),
+      username: z.string().describe("Username"),
+      emailid: z.string().email().describe("Email address"),
+      contact_no: z.string().describe("Contact number"),
+      client_id: z.string().describe("Client ID"),
+      client_log: z.string().describe("Client log"),
     },
-    async (params) => {
+    async (rawParams) => {
       try {
+        // Extract actual values from MCP parameter objects
+        const params = Object.fromEntries(
+          Object.entries(rawParams).map(([key, value]) => [
+            key,
+            typeof value === 'object' && value !== null && 'value' in value ? value.value : value
+          ])
+        );
+
+        // Validate extracted parameters
+        const validationSchema = z.object({
+          admin_id: z.number(),
+          organization_id: z.number(),
+          superadmin_id: z.number(),
+          associate_id: z.number(),
+          exam_id: z.number(),
+          set_id: z.number(),
+          logo: z.string().url(),
+          name: z.string(),
+          primary_color: z.string(),
+          background_color: z.string(),
+          cta_color: z.string(),
+          cta_text_color: z.string(),
+          cta_text: z.string(),
+          copyright_text: z.string(),
+          test_name: z.string(),
+          backtodashboard: z.string(),
+          testlink: z.string(),
+          reportlink: z.string(),
+          username: z.string(),
+          emailid: z.string().email(),
+          contact_no: z.string(),
+          client_id: z.string(),
+          client_log: z.string(),
+        });
+
+        const validatedParams = validationSchema.parse(params);
+
         const requestData: UserRegisterRequest = {
           admin: {
-            admin_id: params.admin_id,
-            organization_id: params.organization_id,
-            superadmin_id: params.superadmin_id,
-            associate_id: params.associate_id,
+            admin_id: validatedParams.admin_id,
+            organization_id: validatedParams.organization_id,
+            superadmin_id: validatedParams.superadmin_id,
+            associate_id: validatedParams.associate_id,
           },
           exam: {
-            exam_id: params.exam_id,
-            set_id: params.set_id,
+            exam_id: validatedParams.exam_id,
+            set_id: validatedParams.set_id,
           },
           oem: {
             header: {
-              logo: params.logo,
-              name: params.name,
+              logo: validatedParams.logo,
+              name: validatedParams.name,
               color: {
-                primary: params.primary_color,
-                background: params.background_color,
-                cta: params.cta_color,
-                cta_text_color: params.cta_text_color,
-                cta_text: params.cta_text,
+                primary: validatedParams.primary_color,
+                background: validatedParams.background_color,
+                cta: validatedParams.cta_color,
+                cta_text_color: validatedParams.cta_text_color,
+                cta_text: validatedParams.cta_text,
               },
             },
             footer: {
-              copyright_text: params.copyright_text,
-              test_name: params.test_name,
+              copyright_text: validatedParams.copyright_text,
+              test_name: validatedParams.test_name,
             },
             links: {
-              backtodashboard: params.backtodashboard,
-              testlink: params.testlink,
-              reportlink: params.reportlink,
+              backtodashboard: validatedParams.backtodashboard,
+              testlink: validatedParams.testlink,
+              reportlink: validatedParams.reportlink,
             },
           },
           user: {
-            username: params.username,
-            emailid: params.emailid,
-            contact_no: params.contact_no,
+            username: validatedParams.username,
+            emailid: validatedParams.emailid,
+            contact_no: validatedParams.contact_no,
           },
-          client_id: params.client_id,
-          client_log: params.client_log,
+          client_id: validatedParams.client_id,
+          client_log: validatedParams.client_log,
         };
 
         const result = await registerUser(requestData);
@@ -161,10 +198,19 @@ export function registerUserRegisterTool(server: McpServer) {
         return {
           content: [{ 
             type: "text", 
-            text: `User registered successfully: ${JSON.stringify(result)}` 
+            text: `User registered successfully: ${JSON.stringify(result, null, 2)}` 
           }],
         };
       } catch (error) {
+        if (error instanceof z.ZodError) {
+          return {
+            content: [{ 
+              type: "text", 
+              text: `Validation error: ${JSON.stringify(error.errors, null, 2)}` 
+            }],
+          };
+        }
+        
         return {
           content: [{ 
             type: "text", 
