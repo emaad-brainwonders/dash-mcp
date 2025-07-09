@@ -94,8 +94,8 @@ function extractMcpValue(value: any): any {
 
 // Default values with updated admin defaults
 const DEFAULT_VALUES = {
-  admin_id: 5,
-  organization_id: 3,
+  admin_id: 4,
+  organization_id: 19,
   superadmin_id: 2,
   associate_id: 1,
   exam_id: 2,
