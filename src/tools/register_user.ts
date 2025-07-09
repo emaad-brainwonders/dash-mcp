@@ -92,11 +92,11 @@ function extractMcpValue(value: any): any {
   return value;
 }
 
-// Default values based on your provided template
+// Default values with updated admin defaults
 const DEFAULT_VALUES = {
-  admin_id: 67,
-  organization_id: 76,
-  superadmin_id: 1,
+  admin_id: 5,
+  organization_id: 3,
+  superadmin_id: 2,
   associate_id: 1,
   exam_id: 2,
   set_id: 16,
@@ -125,10 +125,10 @@ export function registerUserRegisterTool(server: McpServer) {
       emailid: z.string().email().describe("Email address"),
       contact_no: z.string().describe("Contact number"),
       
-      // Optional fields with defaults
-      admin_id: z.number().optional().describe("Admin ID (default: 67)"),
-      organization_id: z.number().optional().describe("Organization ID (default: 76)"),
-      superadmin_id: z.number().optional().describe("Superadmin ID (default: 1)"),
+      // Optional fields with updated defaults
+      admin_id: z.number().optional().describe("Admin ID (default: 5)"),
+      organization_id: z.number().optional().describe("Organization ID (default: 3)"),
+      superadmin_id: z.number().optional().describe("Superadmin ID (default: 2)"),
       associate_id: z.number().optional().describe("Associate ID (default: 1)"),
       exam_id: z.number().optional().describe("Exam ID (default: 2)"),
       set_id: z.number().optional().describe("Set ID (default: 16)"),
@@ -185,7 +185,7 @@ export function registerUserRegisterTool(server: McpServer) {
           primary_color: params.primary_color ?? DEFAULT_VALUES.primary_color,
           background_color: params.background_color ?? DEFAULT_VALUES.background_color,
           cta_color: params.cta_color ?? DEFAULT_VALUES.cta_color,
-          cta_text_color: params.cta_text_color ?? DEFAULT_VALUES.cta_text_color,
+          cta_text_color: params.cta_text_color ?? DEFAULT_VALUES.cta_color,
           cta_text: params.cta_text ?? DEFAULT_VALUES.cta_text,
           copyright_text: params.copyright_text ?? DEFAULT_VALUES.copyright_text,
           test_name: params.test_name ?? DEFAULT_VALUES.test_name,
